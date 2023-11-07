@@ -240,8 +240,10 @@ char *ajustarString (char * str) {
 
 int main() {
     
-   int tamanho = 4;
-   int qtdEndereco = 2;
+    int ra, indice, res;
+    int tamanho = 4;
+    int qtdEndereco = 2;
+   
 
     Array_Dinamico *array_dinamico = criar_array_dinamico(tamanho, false);
     Aluno *novoAluno = (Aluno*)malloc(sizeof(Aluno));
@@ -307,11 +309,13 @@ int main() {
 
         switch (opcao) {
             
-            case 1:                                   
+            case 1:  
+
+                //adicionar Aluno                                 
                 
                 novoAluno = (Aluno*)malloc(sizeof(Aluno));
 
-                ra: 
+                informar_ra: 
 
                 do {
 
@@ -328,7 +332,7 @@ int main() {
                 // Verifica se o RA já está armazenado
                 if (busca_sequencial_array_dinamico(array_dinamico, novoAluno->ra) != -1) {
 
-                    int res = 0; 
+                    res = 0;
                         
                     do {
                         printf("\nAluno ja cadastrado!\n");
@@ -338,7 +342,7 @@ int main() {
                                 
                         if (res == 1) {
                        
-                            goto ra;
+                            goto informar_ra;
                         } 
                         else if (res == 2) {
 
@@ -436,68 +440,147 @@ int main() {
                     adicionar_array_dinamico(array_dinamico, novoAluno);
 
                     novoAluno = NULL;
+                    
+                    system("cls");
 
-                    printf("\nAluno adicionado com sucesso!\n");
-                        
+                    printf("\n\nAluno adicionado com sucesso!\n\n");
+
                 }
 
                 break;
             case 2:
 
-                int ra, indice, res;
+                //remover aluno
 
                 removerAluno:
 
-                printf("Digite o RA do aluno que você deseja remover: ");
+                system("cls");
+
+                printf("\nDigite o RA do aluno que voce deseja remover: ");
                 scanf(" %d", &ra);
 
-                indice = busca_sequencial_array_dinamico(array_dinamico, ra);
+                if(indice = busca_sequencial_array_dinamico(array_dinamico, ra) != -1) {
 
-                do {
-
-                    printf("\nTem certeza que deseja remover o aluno %s?\n\n 1 - Sim\n2 - Nao\n\nDigite o numero de acordo com a sua escolha: ", array_dinamico->ptr_dados[indice]->nome);
-                    scanf(" %d", &res);
-
-                    if (res != 1 && res != 2) {
+                    do {
 
                         system("cls");
-                        printf("\nPor favor, digite uma opcao valida! ");
-                    }
-                } while (res != 1 && res != 2);
+                        printf("\nTem certeza que deseja remover o aluno %s?\n\n1 - Sim\n2 - Nao\n\nDigite o numero de acordo com a sua escolha: ", array_dinamico->ptr_dados[indice]->nome);
+                        scanf(" %d", &res);
 
-                if (res == 1) {
-                    
-                    remover_aluno(ra, array_dinamico);
-                    system("cls");
-                    printf(" ##  Aluno removido com sucesso!!  ## ");
+                        if (res != 1 && res != 2) {
+
+                            system("cls");
+                            printf("\nPor favor, digite uma opcao valida! ");
+                        }
+                    } while (res != 1 && res != 2);
+
+                    if (res == 1) {
+                        
+                        remover_aluno(ra, array_dinamico);
+                        system("cls");
+                        printf("\n\n ##  Aluno removido com sucesso!!  ## \n\n");
+
+                        sleep(2);
+
+                        system("cls");
+                    }
+                    else{
+                        
+                        system("cls");
+                        goto removerAluno;
+                    }
                 }
-                else{
+                else {
                     
                     system("cls");
-                    goto removerAluno;
+                    printf("\n\n##  Aluno nao encontrado!  ##\n");
+
+                    do {
+
+                        
+                        printf("\nGostaria de informar um novo RA?\n\n1 - Sim\n2 - Nao\n\nDigite o numero de acordo com a sua escolha: ", array_dinamico->ptr_dados[indice]->nome);
+                        scanf(" %d", &res);
+
+                        if (res != 1 && res != 2) {
+
+                            system("cls");
+                            printf("\nPor favor, digite uma opcao valida! ");
+                        }
+                    } while (res != 1 && res != 2);
+
+                    if (res == 1) {
+                        
+                        goto removerAluno;
+                    }
+                    else {
+                        
+                        system("cls");
+                        goto menu;
+                    }
                 }
                 
                     
                 break;
             case 3:
                 
-                int ra, indice;
+                //mostrar aluno pelo RA
+
+                mostrarAluno:
+
+                system("cls");
 
                 printf("\nDigite o RA que deseja buscar: ");
                 scanf(" %d", &ra);
 
                 indice = busca_sequencial_array_dinamico(array_dinamico, ra);
 
-                imprimir_aluno(indice, array_dinamico);
+                if (indice != -1) {
+                    imprimir_aluno(indice, array_dinamico);
+                }
+                else {
+                    
+                    system("cls");
+                    printf("\n\n##  Aluno nao encontrado!  ##\n");
 
+                    do {
+
+                        
+                        printf("\nGostaria de informar um novo RA?\n\n1 - Sim\n2 - Nao\n\nDigite o numero de acordo com a sua escolha: ", array_dinamico->ptr_dados[indice]->nome);
+                        scanf(" %d", &res);
+
+                        if (res != 1 && res != 2) {
+
+                            system("cls");
+                            printf("\nPor favor, digite uma opcao valida! ");
+                        }
+                    } while (res != 1 && res != 2);
+
+                    if (res == 1) {
+                        
+                        goto mostrarAluno;
+                    }
+                    else {
+                        
+                        system("cls");
+                        goto menu;
+                    }
+                }
                 break;
             case 4:
                 
+                //imprinir todos os alunos
+
                 imprimir_array_dinamico(array_dinamico);
 
                 break;
             case 5:
+
+                //encerrar programa
+
+                system("cls");
                 printf("Encerrando o programa...\n");
+
+                exit(1);
                 break;
             default:
                
@@ -505,24 +588,7 @@ int main() {
         }
 
     } while (opcao != 5);
-    // Buscar Aluno 
-    /*
-    int ra_a_buscar = 12345;
-    int indice_encontrado = busca_sequencial_array_dinamico(array_dinamico, ra_a_buscar);
-   
-    if (indice_encontrado != -1) {
-   
-        printf("Aluno encontrado no índice %d.\n", indice_encontrado);
-    }
-    else {
-    
-        printf("Aluno não encontrado.\n");
-    }
 
-    imprimir_array_dinamico(array_dinamico);
-    
- */
-    
     //fim de codigo
     for (int i = 0; i < array_dinamico->quantidade; i++) {
         
