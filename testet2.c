@@ -130,6 +130,51 @@ int busca_sequencial_array_dinamico(Array_Dinamico *array_dinamico, int ra) {
     return -1; // Retorna -1 se o aluno não for encontrado.
 }
 
+void imprimir_aluno(int i, const Array_Dinamico *array_dinamico) {
+
+    system("cls");
+
+    printf("\n                #### Listagem de Aluno ####");
+       
+    printf("\n==============================================================\n");
+    printf("\n# - Aluno %d - #\n", array_dinamico->ptr_dados[i]->ra);
+    printf("\n    Nome: %s\n", array_dinamico->ptr_dados[i]->nome);
+    printf("    RA: %d\n", array_dinamico->ptr_dados[i]->ra);
+    printf("    Data de Nascimento: %s\n", array_dinamico->ptr_dados[i]->dataNascimento);
+    printf("\n    Endereco 1: \n");
+    printf("    R. %s, %d, %s, %s - %s", array_dinamico->ptr_dados[i]->endereco[0].rua, 
+    array_dinamico->ptr_dados[i]->endereco[0].num, array_dinamico->ptr_dados[i]->endereco[0].bairro, 
+    array_dinamico->ptr_dados[i]->endereco[0].cidade, array_dinamico->ptr_dados[i]->endereco[0].estado);
+    
+    if (array_dinamico->ptr_dados[i]->qtdEndereco == 2) {
+        
+        printf("\n\n    Endereco 2:\n");
+        printf("    R. %s, %d, %s, %s - %s", array_dinamico->ptr_dados[i]->endereco[1].rua, 
+        array_dinamico->ptr_dados[i]->endereco[1].num, array_dinamico->ptr_dados[i]->endereco[1].bairro, 
+        array_dinamico->ptr_dados[i]->endereco[1].cidade, array_dinamico->ptr_dados[i]->endereco[1].estado);
+    }
+    printf("\n\n    Notas:\n\n");
+    
+    for (int j = 1; j < 5; j++) {
+    
+        printf("    Materia de %s: | Media: %.2f\n", array_dinamico->ptr_dados[i]->materia[j].nome, array_dinamico->ptr_dados[i]->materia[j].media);
+    }   
+    printf("\n");
+
+    printf("==============================================================\n");
+}
+
+void remover_aluno (int ra, Array_Dinamico * array_dinamico) {
+
+    int indice = busca_sequencial_array_dinamico(array_dinamico, ra);
+
+    array_dinamico->ptr_dados[indice] = array_dinamico->ptr_dados[array_dinamico->quantidade - 1];
+    array_dinamico->ptr_dados[array_dinamico->quantidade - 1] = NULL;
+    array_dinamico->quantidade = array_dinamico->quantidade - 1;
+
+    diminuir_array_dinamico(array_dinamico);
+}
+
 void imprimir_array_dinamico(const Array_Dinamico *array_dinamico) {
    
    system("cls");
@@ -242,11 +287,13 @@ int main() {
 
     novoAluno = NULL;
 
-    menu: 
+    
 
     int opcao;
 
     do {
+
+        menu: 
 
         printf("\nMenu de Operacoes:\n");
         printf("1. Adicionar novo aluno\n");
@@ -397,10 +444,52 @@ int main() {
                 break;
             case 2:
 
-                //apagar info de aluno
+                int ra, indice, res;
+
+                removerAluno:
+
+                printf("Digite o RA do aluno que você deseja remover: ");
+                scanf(" %d", &ra);
+
+                indice = busca_sequencial_array_dinamico(array_dinamico, ra);
+
+                do {
+
+                    printf("\nTem certeza que deseja remover o aluno %s?\n\n 1 - Sim\n2 - Nao\n\nDigite o numero de acordo com a sua escolha: ", array_dinamico->ptr_dados[indice]->nome);
+                    scanf(" %d", &res);
+
+                    if (res != 1 && res != 2) {
+
+                        system("cls");
+                        printf("\nPor favor, digite uma opcao valida! ");
+                    }
+                } while (res != 1 && res != 2);
+
+                if (res == 1) {
+                    
+                    remover_aluno(ra, array_dinamico);
+                    system("cls");
+                    printf(" ##  Aluno removido com sucesso!!  ## ");
+                }
+                else{
+                    
+                    system("cls");
+                    goto removerAluno;
+                }
+                
+                    
                 break;
             case 3:
-                //mostrar informações de um aluno por RA
+                
+                int ra, indice;
+
+                printf("\nDigite o RA que deseja buscar: ");
+                scanf(" %d", &ra);
+
+                indice = busca_sequencial_array_dinamico(array_dinamico, ra);
+
+                imprimir_aluno(indice, array_dinamico);
+
                 break;
             case 4:
                 
