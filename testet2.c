@@ -116,6 +116,43 @@ void diminuir_array_dinamico(Array_Dinamico *array_dinamico) {
     }
 }
 
+void trocar(void **array, int pos1, int pos2){
+
+	void * temp = array[pos1];
+	array[pos1] = array[pos2];
+	array[pos2] = temp;
+
+}
+
+int compare_strucs_pessoa_nome(const void *pessoa1, const void *pessoa2) { 
+   
+   return strcmp((*(Aluno*)pessoa1).nome, (*(Aluno*)pessoa2).nome);
+}
+
+int particionar(void **array, int p, int r, int (*compare)(const void*, const void*)) { 
+
+	void *value = array[r];	// elemento pivô
+	int i = p - 1;
+
+	for(int j = p;j < r; j++){		// com este loop, os valores são separados em 2 partições, as maiores e as menores do pivô
+		if(compare(array[j], value) <= 0) {
+			i = i + 1;
+			trocar(array, i, j);	// alterar as posições dos elementos antes e depois do elemento ordenado
+        }
+	}
+	trocar(array, i + 1, r);		// mova o elemento inicial para sua posição final
+
+	return i + 1;
+}
+
+void quick_sort(void **array, int p, int r, int (*compare)(const void*, const void*)){
+
+	if(p < r){
+		int q = particionar(array, p, r, compare);	/* pivô */
+		quick_sort(array, p, q - 1, compare);
+		quick_sort(array, q + 1, r, compare);
+	}
+}
 
 int busca_sequencial_array_dinamico(Array_Dinamico *array_dinamico, int ra) {
    
@@ -238,14 +275,78 @@ char *ajustarString (char * str) {
     return str;
 }
 
-int main() {
+int salvarBinario(Array_Dinamico *array_dinamico, char *caminho_arquivo) { 
+
+    FILE *arquivo;
+    arquivo = fopen(caminho_arquivo,"wb");
+
+    if (!arquivo) { 
+       
+        printf("\n\nErro ao abrir o arquivo!\n\n");     
+       
+        return 1;
+    }
+
+    for ( int i = 0; i < array_dinamico->quantidade; i++) { 
+      
+       fwrite(array_dinamico->ptr_dados[i]->nome, sizeof(Aluno), 1, arquivo);
+    }
+
+    fclose(arquivo);
+    return 0;
+}
+
+int carregarBinario(Array_Dinamico *array_dinamico, char *caminho_arquivo) { 
+
+    FILE *arquivo;
+    arquivo = fopen(caminho_arquivo ,"rb");
     
+    if (!arquivo) { 
+           
+            printf("\n\nErro ao abrir o arquivo!\n\n");     
+            return 1;
+    }
+   
+    while (1) { 
+     
+        if (feof(arquivo)) {
+            break;  
+        }
+        else {
+           
+            Aluno * aluno = (Aluno *) malloc(1 * sizeof(Aluno));    
+            
+            fread(aluno, sizeof(Aluno), 1 , arquivo);
+            
+            adicionar_array_dinamico(array_dinamico, aluno);
+        }  
+    }
+
+    fclose(arquivo);
+    return 0;
+}
+
+int main (int argc, char *argv[]) {
+    
+    if (argc < 2) {
+
+        printf("Uso: %s <caminho_do_arquivo>\n", argv[0]);
+
+        return 0;
+    }
+
+    char *dados_alunos = argv[1];
+
+    printf("\n\nSegundo Parametro %s", dados_alunos);
+
     int ra, indice, res;
     int tamanho = 4;
     int qtdEndereco = 2;
-   
 
     Array_Dinamico *array_dinamico = criar_array_dinamico(tamanho, false);
+    
+    carregarBinario(array_dinamico, dados_alunos);  
+
     Aluno *novoAluno = (Aluno*)malloc(sizeof(Aluno));
 
     novoAluno->endereco = (Endereco *) malloc(qtdEndereco * sizeof(Endereco));
@@ -256,7 +357,7 @@ int main() {
         exit(1);
     }
     
-    //info do aluno
+    /*//info do aluno
 
     strcpy(novoAluno->nome, "Aluno 1");
     novoAluno->ra = 12345;
@@ -286,10 +387,8 @@ int main() {
     }
 
     adicionar_array_dinamico(array_dinamico, novoAluno);
-
-    novoAluno = NULL;
-
-    
+*/
+   // novoAluno = NULL;
 
     int opcao;
 
@@ -297,7 +396,7 @@ int main() {
 
         menu: 
 
-        printf("\nMenu de Operacoes:\n");
+        printf("\n\n\nMenu de Operacoes:\n");
         printf("1. Adicionar novo aluno\n");
         printf("2. Apagar informacoes de um aluno\n");
         printf("3. Mostrar informacoes de um aluno pelo RA\n");
@@ -568,9 +667,26 @@ int main() {
                 break;
             case 4:
                 
-                //imprinir todos os alunos
+                //imprimir todos os alunos
+                if(array_dinamico->quantidade == 0) {
+                    
+                    system("cls");
+                    printf("\n\nNao a alunos cadastrados!...");
+                    sleep(2);
 
-                imprimir_array_dinamico(array_dinamico);
+                    printf("\n\nRetornando ao \"Menu Principal\"");
+                    sleep(2);
+
+                    system("cls");
+                    goto menu;
+
+                }
+                else {
+
+                    quick_sort((void**)array_dinamico->ptr_dados, 0, array_dinamico->quantidade - 1, compare_strucs_pessoa_nome); 
+
+                    imprimir_array_dinamico(array_dinamico);
+                }
 
                 break;
             case 5:
@@ -580,7 +696,6 @@ int main() {
                 system("cls");
                 printf("Encerrando o programa...\n");
 
-                exit(1);
                 break;
             default:
                
@@ -589,12 +704,16 @@ int main() {
 
     } while (opcao != 5);
 
-    //fim de codigo
+    
     for (int i = 0; i < array_dinamico->quantidade; i++) {
         
         free(array_dinamico->ptr_dados[i]);
     }
-    destruir_array_dinamico(&array_dinamico);
 
+    salvarBinario(array_dinamico, dados_alunos);
+    
+    destruir_array_dinamico(&array_dinamico);
+    
+    //fim de codigo
     return 0;
 }
