@@ -339,8 +339,6 @@ int carregarBinario(Array_Dinamico *array_dinamico, char *caminho_arquivo) {
 
     for(int i = 0; i < quantidade_alunos; i++) {
        
-        printf("\n\nfOR lACO %d\n\n", i);
-        
         Aluno *aluno = (Aluno *)malloc(sizeof(Aluno));
 
         fread(aluno->nome, sizeof(aluno->nome), 1, arquivo);
@@ -603,11 +601,20 @@ int main (int argc, char *argv[]) {
                 if (array_dinamico->quantidade == 0) {
                     
                     printf("\n\nNão há alunos registrados para serem removidos...");
+                    sleep(1);
+
+                    printf("\n\nRetornando ao \"Menu Principal\"");
                     sleep(2);
                     goto menu;
                 }
                 
-                printf("\nDigite o RA do aluno que voce deseja remover: ");
+                printf("\n\n### Segue os RAs disponiveis ###\n");
+                for (int i = 0; i < array_dinamico->quantidade; i++) {
+                    
+                    printf("\nAluno: %s | RA: %d", array_dinamico->ptr_dados[i]->nome, array_dinamico->ptr_dados[i]->ra);
+                }
+                
+                printf("\n\nDigite o RA do aluno que voce deseja remover: ");
                 scanf(" %d", &ra);
 
                 if((indice = busca_sequencial_array_dinamico(array_dinamico, ra)) != -1) {
@@ -726,7 +733,23 @@ int main (int argc, char *argv[]) {
 
                 system("cls");
 
-                printf("\nDigite o RA que deseja buscar: ");
+                if (array_dinamico->quantidade == 0) {
+                    
+                    printf("\n\nNao ha alunos registrados...");
+                    sleep(1);
+
+                    printf("\n\nRetornando ao \"Menu Principal\"");
+                    sleep(2);
+                    goto menu;
+                }     
+
+                printf("\n\n### Segue os RAs disponiveis ###\n");
+                for (int i = 0; i < array_dinamico->quantidade; i++) {
+                    
+                    printf("\nAluno: %-8s | RA: %d", array_dinamico->ptr_dados[i]->nome, array_dinamico->ptr_dados[i]->ra);
+                } 
+
+                printf("\n\nDigite o RA que deseja buscar: ");
                 scanf(" %d", &ra);
 
                 indice = busca_sequencial_array_dinamico(array_dinamico, ra);
