@@ -192,7 +192,7 @@ void imprimir_aluno(int i, const Array_Dinamico *array_dinamico) {
     }
     printf("\n\n    Notas:\n\n");
     
-    for (int j = 1; j < 5; j++) {
+    for (int j = 0; j < 5; j++) {
     
         printf("    Materia de %s: | Media: %.2f\n", array_dinamico->ptr_dados[i]->materia[j].nome, array_dinamico->ptr_dados[i]->materia[j].media);
     }   
@@ -286,7 +286,7 @@ int salvarBinario(Array_Dinamico *array_dinamico, char *caminho_arquivo) {
         return 1;
     }
 
-    //fwrite(&array_dinamico->quantidade, sizeof(int), 1, arquivo);
+    fwrite(&array_dinamico->quantidade, sizeof(int), 1, arquivo);
 
     for (int i = 0; i < array_dinamico->quantidade; i++) { 
        
@@ -299,6 +299,10 @@ int salvarBinario(Array_Dinamico *array_dinamico, char *caminho_arquivo) {
         for (int j = 0; j < array_dinamico->ptr_dados[i]->qtdEndereco; j++) {
            
             fwrite(&array_dinamico->ptr_dados[i]->endereco[j], sizeof(Endereco), 1, arquivo);
+        }
+        for (int k = 0; k < 5; k++) {
+           
+            fwrite(&array_dinamico->ptr_dados[i]->materia[k], sizeof(Materia), 1, arquivo);
         }
     }
 
@@ -322,25 +326,20 @@ int carregarBinario(Array_Dinamico *array_dinamico, char *caminho_arquivo) {
     long tamanho_arquivo = ftell(arquivo);
 
     if (tamanho_arquivo == 0) {
-   
+        
         fclose(arquivo);
         return 2;
     }
 
     fseek(arquivo, 0, SEEK_SET); // Move o cursor de volta para o início do arquivo
 
-    //int quantidade_alunos;
+    int quantidade_alunos;
    
-    //fread(&quantidade_alunos, sizeof(int), 1, arquivo);
+    fread(&quantidade_alunos, sizeof(int), 1, arquivo);
 
-    //printf("quantidade2 -> %d", quantidade_alunos);
-
-    while (1) { 
-
-        if (feof(arquivo)) {
-
-            break; 
-        }
+    for(int i = 0; i < quantidade_alunos; i++) {
+       
+        printf("\n\nfOR lACO %d\n\n", i);
         
         Aluno *aluno = (Aluno *)malloc(sizeof(Aluno));
 
@@ -356,14 +355,51 @@ int carregarBinario(Array_Dinamico *array_dinamico, char *caminho_arquivo) {
    
             fread(&aluno->endereco[j], sizeof(Endereco), 1, arquivo);
         }
-
+        for (int k = 0; k < 5; k++) {
+           
+            fread(&aluno->materia[k], sizeof(Materia), 1, arquivo);
+        }
+        
         adicionar_array_dinamico(array_dinamico, aluno);
     }
-
+     
     fclose(arquivo);
     return 0;
 }
 
+int removerAlunoPorRA_arquivo(char *caminho_arquivo, int ra) {
+   
+    FILE *arquivo, *temp;
+
+    arquivo = fopen(caminho_arquivo, "rb");
+    temp = fopen("temp.bin", "wb");
+
+    if (!arquivo || !temp) {
+        printf("Erro ao abrir arquivo.\n");
+        return 1;
+    }
+
+    int quantidade_alunos = 0;
+
+    fread(&quantidade_alunos, sizeof(int), 1, arquivo);
+    fwrite(&quantidade_alunos, sizeof(int), 1, temp);
+
+    for (int i = 0; i < quantidade_alunos; i++) {
+        Aluno aluno;
+        fread(&aluno, sizeof(Aluno), 1, arquivo);
+
+        if (aluno.ra != ra) {
+            fwrite(&aluno, sizeof(Aluno), 1, temp);
+        }
+    }
+
+    fclose(arquivo);
+    fclose(temp);
+    remove(caminho_arquivo);
+    rename("temp.bin", caminho_arquivo);
+
+    return 0;
+}
 
 
 int main (int argc, char *argv[]) {
@@ -377,18 +413,13 @@ int main (int argc, char *argv[]) {
 
     char *dados_alunos = argv[1];
 
-    printf("\n\nSegundo Parametro %s", dados_alunos);
-
     int ra, indice, res;
     int tamanho = 4;
     int qtdEndereco = 2;
 
     Array_Dinamico *array_dinamico = criar_array_dinamico(tamanho, false);
     
-    if(carregarBinario(array_dinamico, dados_alunos) != 2 ) {
-       
-        carregarBinario(array_dinamico, dados_alunos); 
-    } 
+    carregarBinario(array_dinamico, dados_alunos); 
 
     Aluno *novoAluno = (Aluno*)malloc(sizeof(Aluno));
 
@@ -569,10 +600,17 @@ int main (int argc, char *argv[]) {
 
                 system("cls");
 
+                if (array_dinamico->quantidade == 0) {
+                    
+                    printf("\n\nNão há alunos registrados para serem removidos...");
+                    sleep(2);
+                    goto menu;
+                }
+                
                 printf("\nDigite o RA do aluno que voce deseja remover: ");
                 scanf(" %d", &ra);
 
-                if(indice = busca_sequencial_array_dinamico(array_dinamico, ra) != -1) {
+                if((indice = busca_sequencial_array_dinamico(array_dinamico, ra)) != -1) {
 
                     do {
 
@@ -590,6 +628,7 @@ int main (int argc, char *argv[]) {
                     if (res == 1) {
                         
                         remover_aluno(ra, array_dinamico);
+                        removerAlunoPorRA_arquivo(dados_alunos, ra);
                         system("cls");
                         printf("\n\n ##  Aluno removido com sucesso!!  ## \n\n");
 
@@ -597,10 +636,34 @@ int main (int argc, char *argv[]) {
 
                         system("cls");
                     }
-                    else{
+                    else if(res == 2){
+
+                        int res1 = 0;      
+                       // system("cls");
                         
-                        system("cls");
-                        goto removerAluno;
+                        do {
+                            printf("\n\nCerto, escolha a opção desejada: ");
+                            printf("\n\n1 - Inserir um novo RA\n\n2 - Voltar ao Menu principal\n\n");
+                            printf("Digite o numero de acordo com a sua escolha: ");
+                            scanf(" %d", &res1);
+                       
+                            if (res1 != 1 && res1 != 2) {
+
+                                system("cls");
+                                printf("\nPor favor, digite uma opcao valida! ");
+                            } 
+                        }while (res1 != 1 && res1 != 2);    
+                    
+                        if (res1 == 1) {
+
+
+                            goto removerAluno;
+                        }
+                        else if (res1 == 2){
+                            
+                            system("cls");
+                            goto menu;
+                        }
                     }
                 }
                 else {
@@ -625,14 +688,35 @@ int main (int argc, char *argv[]) {
                         
                         goto removerAluno;
                     }
-                    else {
-                        
+                    else if(res == 2){
+
+                        int res2 = 0;      
                         system("cls");
-                        goto menu;
+                        
+                        do {
+                            printf("\n\nCerto, escolha a opcao desejada: ");
+                            printf("\n\n1 - Inserir um novo RA\n2 - Voltar ao Menu principal\n\n");
+                            printf("Digite o numero de acordo com a sua escolha: ");
+                            scanf(" %d", &res2);
+                       
+                            if (res2 != 1 && res2 != 2) {
+
+                                system("cls");
+                                printf("\nPor favor, digite uma opcao valida! ");
+                            } 
+                        }while (res2 != 1 && res2 != 2);    
+                    
+                        if (res2 == 1) {
+                                
+                            goto removerAluno;
+                        }
+                        else if (res2 == 2){
+                            
+                            system("cls");
+                            goto menu;
+                        }
                     }
                 }
-                
-                    
                 break;
             case 3:
                 
